@@ -3,614 +3,342 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>For Riham — Keep Going</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <title>Riham Dreamscape</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg-top: #140724;
-      --bg-mid: #1e0f3d;
-      --bg-bottom: #090312;
-      --pink: #ff8fd8;
-      --pink-2: #ffc7eb;
-      --gold: #ffe29f;
-      --violet: #9b7bff;
-      --glass: rgba(255,255,255,0.08);
-      --glass-border: rgba(255,255,255,0.16);
-      --text: rgba(255,255,255,0.95);
-      --muted: rgba(255,255,255,0.78);
-    }
-
-    body {
-      font-family: Inter, Segoe UI, Arial, sans-serif;
-      background: radial-gradient(circle at 50% 20%, var(--bg-mid), var(--bg-bottom) 70%);
-      color: white;
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      height: 100vh;
-      user-select: none;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #14213d 0%, #090b16 35%, #020308 100%);
     }
-
-    canvas {
+    #scene {
       position: fixed;
       inset: 0;
-      display: block;
     }
-
-    #bg { z-index: 0; }
-    #game { z-index: 1; pointer-events: none; }
-
-    .hud {
+    .top-badge {
       position: fixed;
-      inset: 0;
-      z-index: 3;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 24px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      pointer-events: none;
-    }
-
-    .pill {
-      padding: 10px 16px;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 18px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      backdrop-filter: blur(10px);
-      color: var(--pink-2);
-      font-size: 0.95rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.16);
-    }
-
-    .score {
-      color: var(--gold);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }
-
-    .center-wrap {
-      flex: 1;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-      padding: 20px;
-    }
-
-    .card {
-      width: min(880px, 100%);
-      padding: 32px;
-      border-radius: 30px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.06));
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
-      position: relative;
-      overflow: hidden;
-      pointer-events: auto;
-      transform-style: preserve-3d;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: -30%;
-      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 35%);
-      animation: rotateGlow 12s linear infinite;
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .mini-title {
-      display: inline-block;
-      margin-bottom: 14px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: var(--pink-2);
-      font-size: 0.9rem;
-    }
-
-    h1 {
-      font-size: clamp(2.6rem, 6vw, 5.2rem);
-      line-height: 0.92;
-      letter-spacing: -0.04em;
-      margin-bottom: 18px;
-      text-shadow: 0 10px 30px rgba(255,143,216,0.18);
-    }
-
-    .name {
-      display: block;
-      background: linear-gradient(90deg, #fff, var(--pink-2), var(--gold), #fff);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: shimmer 5s linear infinite;
-    }
-
-    .type-line {
-      color: var(--gold);
-      min-height: 30px;
-      font-size: 1.05rem;
-      margin-bottom: 18px;
-    }
-
-    .message {
-      color: var(--text);
-      line-height: 1.9;
-      font-size: 1.04rem;
-      max-width: 760px;
-    }
-
-    .message strong {
-      color: var(--gold);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 26px;
-    }
-
-    button {
-      pointer-events: auto;
-      border: none;
-      border-radius: 999px;
-      padding: 14px 20px;
-      font-size: 0.98rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
-    }
-
-    .primary {
-      background: linear-gradient(90deg, var(--pink), #ffb3e8);
-      color: #3b1132;
-      box-shadow: 0 14px 30px rgba(255,143,216,0.28);
-    }
-
-    .secondary {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.14);
-    }
-
-    button:hover {
-      transform: translateY(-2px) scale(1.03);
-    }
-
-    .footer {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 0.93rem;
-    }
-
-    .bottom-tip {
-      display: flex;
-      justify-content: center;
-      pointer-events: none;
-    }
-
-    .tip {
-      padding: 12px 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.12);
-      backdrop-filter: blur(8px);
-      color: rgba(255,255,255,0.86);
-      font-size: 0.95rem;
-      text-align: center;
-      max-width: 620px;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.35em;
+      font-size: 12px;
+      backdrop-filter: blur(12px);
+      z-index: 5;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
-
-    .floating-ui {
+    .bottom-note {
       position: fixed;
-      inset: 0;
-      z-index: 4;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      backdrop-filter: blur(12px);
+      z-index: 5;
+      text-align: center;
+    }
+    .glow-top,
+    .glow-bottom {
+      position: fixed;
+      left: 0;
+      right: 0;
       pointer-events: none;
-      overflow: hidden;
+      filter: blur(60px);
+      z-index: 1;
     }
-
-    .popup-heart, .popup-star, .popup-word {
-      position: absolute;
-      will-change: transform, opacity;
-      text-shadow: 0 0 18px rgba(255,255,255,0.18);
+    .glow-top {
+      top: 0;
+      height: 180px;
+      background: linear-gradient(to bottom, rgba(255, 70, 220, 0.18), transparent);
     }
-
-    .popup-word {
-      font-weight: 800;
-      color: var(--gold);
-      letter-spacing: 0.04em;
+    .glow-bottom {
+      bottom: 0;
+      height: 220px;
+      background: linear-gradient(to top, rgba(70, 220, 255, 0.18), transparent);
     }
-
-    @keyframes shimmer {
-      from { background-position: 0% center; }
-      to { background-position: 200% center; }
-    }
-
-    @keyframes rotateGlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    @media (max-width: 720px) {
-      .hud { padding: 14px; }
-      .card { padding: 22px 18px; border-radius: 24px; }
-      .message { font-size: 0.98rem; }
-      .actions { flex-direction: column; }
-      button { width: 100%; }
-      .topbar { flex-direction: column; align-items: stretch; }
+    @media (max-width: 640px) {
+      .top-badge {
+        letter-spacing: 0.22em;
+        font-size: 10px;
+        padding: 8px 14px;
+        top: 18px;
+      }
+      .bottom-note {
+        width: calc(100% - 28px);
+        font-size: 13px;
+        bottom: 18px;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="bg"></canvas>
-  <canvas id="game"></canvas>
-  <div class="floating-ui" id="floatingUI"></div>
+  <canvas id="scene"></canvas>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+  <div class="top-badge">DREAMSCAPE • RIHAM</div>
+  <div class="bottom-note">Drag to orbit • Scroll to zoom</div>
 
-  <div class="hud">
-    <div class="topbar">
-      <div class="pill">A light for someone who matters</div>
-      <div class="pill score">Hope collected: <span id="score">0</span></div>
-    </div>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { FontLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/FontLoader.js';
+    import { TextGeometry } from 'https://unpkg.com/three@0.160.0/examples/jsm/geometries/TextGeometry.js';
 
-    <div class="center-wrap">
-      <div class="card" id="card">
-        <div class="mini-title">Interactive support experience</div>
-        <h1>Stay strong,<span class="name">Riham</span></h1>
-        <div class="type-line" id="typeLine"></div>
-        <div class="message">
-          I know things can feel heavy, confusing, and exhausting sometimes. But this moment is not the end of your story. You are still here, and that already means something beautiful. <strong>You do not have to give up.</strong><br><br>
-          Every little glowing heart on this page is a reminder that your life still holds warmth, meaning, and gentle tomorrows. Even when your energy is low, your value is not. Even when your smile fades for a while, your light is still real.<br><br>
-          Hold on one more day, one more breath, one more small step. <strong>You are worth fighting for.</strong>
-        </div>
+    const canvas = document.getElementById('scene');
 
-        <div class="actions">
-          <button class="primary" id="collectBtn">Collect hope ✨</button>
-          <button class="secondary" id="burstBtn">Release love 💖</button>
-          <button class="secondary" id="surpriseBtn">Magic surprise 🌟</button>
-        </div>
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2('#050816', 0.035);
 
-        <div class="footer" id="footerText">Made with care for Riham.</div>
-      </div>
-    </div>
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.5, 10);
 
-    <div class="bottom-tip">
-      <div class="tip">Move your mouse to guide the glowing hearts. Click anywhere to create a wave of love.</div>
-    </div>
-  </div>
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  <script>
-    const bg = document.getElementById('bg');
-    const bgCtx = bg.getContext('2d');
-    const game = document.getElementById('game');
-    const gameCtx = game.getContext('2d');
-    const card = document.getElementById('card');
-    const floatingUI = document.getElementById('floatingUI');
-    const scoreEl = document.getElementById('score');
-    const footerText = document.getElementById('footerText');
-    const typeLine = document.getElementById('typeLine');
-    const collectBtn = document.getElementById('collectBtn');
-    const burstBtn = document.getElementById('burstBtn');
-    const surpriseBtn = document.getElementById('surpriseBtn');
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 6;
+    controls.maxDistance = 16;
+    controls.maxPolarAngle = Math.PI * 0.62;
+    controls.minPolarAngle = Math.PI * 0.35;
 
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    bg.width = game.width = w;
-    bg.height = game.height = h;
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
 
-    const pointer = { x: w / 2, y: h / 2, active: false };
-    let score = 0;
-    let pulse = 0;
+    const ambient = new THREE.AmbientLight('#88aaff', 1.35);
+    scene.add(ambient);
 
-    const messages = [
-      'You are precious.',
-      'You are not alone.',
-      'Please keep going.',
-      'Your future still needs you.',
-      'Your light is still alive.'
+    const pinkLight = new THREE.PointLight('#ff4fd8', 30, 30, 2);
+    pinkLight.position.set(-4, 3, 6);
+    scene.add(pinkLight);
+
+    const cyanLight = new THREE.PointLight('#4deaff', 28, 32, 2);
+    cyanLight.position.set(5, -1, 5);
+    scene.add(cyanLight);
+
+    const rimLight = new THREE.DirectionalLight('#ffffff', 2.6);
+    rimLight.position.set(0, 5, -2);
+    scene.add(rimLight);
+
+    const floorGeo = new THREE.CircleGeometry(8, 64);
+    const floorMat = new THREE.MeshBasicMaterial({
+      color: '#091426',
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide,
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -2.5;
+    scene.add(floor);
+
+    const ringGroup = new THREE.Group();
+    scene.add(ringGroup);
+
+    function createRing(radius, tube, color, y, speed) {
+      const geo = new THREE.TorusGeometry(radius, tube, 24, 120);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        emissive: color,
+        emissiveIntensity: 1.3,
+        metalness: 0.55,
+        roughness: 0.2,
+        transparent: true,
+        opacity: 0.75,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.rotation.x = Math.PI / 2.25;
+      mesh.position.y = y;
+      mesh.userData.speed = speed;
+      ringGroup.add(mesh);
+      return mesh;
+    }
+
+    const rings = [
+      createRing(2.7, 0.035, '#46d5ff', -0.05, 0.35),
+      createRing(3.25, 0.025, '#ff61d8', 0.18, -0.28),
+      createRing(3.9, 0.02, '#8d7bff', -0.2, 0.18),
     ];
 
-    let msgIndex = 0;
-    let charIndex = 0;
-    let deleting = false;
+    const starsCount = 1800;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starsCount * 3);
+    for (let i = 0; i < starsCount; i++) {
+      const i3 = i * 3;
+      const radius = 12 + Math.random() * 28;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      starPositions[i3 + 1] = radius * Math.cos(phi) * 0.6;
+      starPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
-    function typeEffect() {
-      const text = messages[msgIndex];
-      if (!deleting) {
-        typeLine.textContent = text.slice(0, charIndex++);
-        if (charIndex > text.length) {
-          deleting = true;
-          setTimeout(typeEffect, 1200);
-          return;
-        }
-      } else {
-        typeLine.textContent = text.slice(0, charIndex--);
-        if (charIndex < 0) {
-          deleting = false;
-          msgIndex = (msgIndex + 1) % messages.length;
-        }
-      }
-      setTimeout(typeEffect, deleting ? 40 : 65);
+    const starMat = new THREE.PointsMaterial({
+      color: '#d7ecff',
+      size: 0.08,
+      transparent: true,
+      opacity: 0.9,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    const sparkleCount = 220;
+    const sparkleGeo = new THREE.BufferGeometry();
+    const sparklePositions = new Float32Array(sparkleCount * 3);
+    const sparkleOffsets = [];
+
+    for (let i = 0; i < sparkleCount; i++) {
+      const i3 = i * 3;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 2.6 + Math.random() * 2.4;
+      sparklePositions[i3] = Math.cos(angle) * radius;
+      sparklePositions[i3 + 1] = -0.5 + Math.random() * 2.2;
+      sparklePositions[i3 + 2] = Math.sin(angle) * radius * 0.4;
+      sparkleOffsets.push({
+        angle,
+        radius,
+        speed: 0.3 + Math.random() * 0.8,
+        rise: Math.random() * Math.PI * 2,
+      });
     }
 
-    class Star {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.r = Math.random() * 1.8 + 0.3;
-        this.speed = Math.random() * 0.2 + 0.05;
-        this.alpha = Math.random() * 0.7 + 0.2;
-        this.phase = Math.random() * Math.PI * 2;
-      }
-      update() {
-        this.y += this.speed;
-        if (this.y > h + 5) { this.y = -10; this.x = Math.random() * w; }
-        this.phase += 0.02;
-      }
-      draw() {
-        const a = this.alpha + Math.sin(this.phase) * 0.2;
-        bgCtx.beginPath();
-        bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        bgCtx.fillStyle = `rgba(255,255,255,${a})`;
-        bgCtx.shadowBlur = 12;
-        bgCtx.shadowColor = 'rgba(255,255,255,0.6)';
-        bgCtx.fill();
-        bgCtx.shadowBlur = 0;
-      }
-    }
+    sparkleGeo.setAttribute('position', new THREE.BufferAttribute(sparklePositions, 3));
+    const sparkleMat = new THREE.PointsMaterial({
+      color: '#ffffff',
+      size: 0.05,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const sparkles = new THREE.Points(sparkleGeo, sparkleMat);
+    mainGroup.add(sparkles);
 
-    class Orb {
-      constructor() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.r = Math.random() * 140 + 60;
-        this.vx = (Math.random() - 0.5) * 0.25;
-        this.vy = (Math.random() - 0.5) * 0.25;
-        this.color = Math.random() > 0.5 ? '255,143,216' : '155,123,255';
-      }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < -100 || this.x > w + 100) this.vx *= -1;
-        if (this.y < -100 || this.y > h + 100) this.vy *= -1;
-      }
-      draw() {
-        const g = bgCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
-        g.addColorStop(0, `rgba(${this.color},0.12)`);
-        g.addColorStop(1, `rgba(${this.color},0)`);
-        bgCtx.fillStyle = g;
-        bgCtx.beginPath();
-        bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        bgCtx.fill();
-      }
-    }
+    let textMesh = null;
+    let glowMesh = null;
 
-    class Heart {
-      constructor(x, y, auto = false) {
-        this.x = x;
-        this.y = y;
-        this.size = Math.random() * 18 + 12;
-        this.vx = (Math.random() - 0.5) * 1.1;
-        this.vy = Math.random() * -1.6 - 0.8;
-        this.rot = Math.random() * Math.PI * 2;
-        this.rotV = (Math.random() - 0.5) * 0.04;
-        this.alpha = 1;
-        this.auto = auto;
-        this.life = 1;
-        this.hue = Math.random() > 0.5 ? '#ff9de6' : '#ffe29f';
-      }
-      update() {
-        const dx = pointer.x - this.x;
-        const dy = pointer.y - this.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        if (pointer.active && dist < 220) {
-          this.vx += dx / dist * 0.015;
-          this.vy += dy / dist * 0.015;
-        }
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += 0.004;
-        this.rot += this.rotV;
-        this.life -= this.auto ? 0.0026 : 0.004;
-        this.alpha = Math.max(0, this.life);
-      }
-      draw() {
-        gameCtx.save();
-        gameCtx.translate(this.x, this.y);
-        gameCtx.rotate(this.rot);
-        gameCtx.scale(this.size / 20, this.size / 20);
-        gameCtx.globalAlpha = this.alpha;
-        gameCtx.shadowBlur = 20;
-        gameCtx.shadowColor = this.hue;
-        gameCtx.fillStyle = this.hue;
-        gameCtx.beginPath();
-        gameCtx.moveTo(0, 6);
-        gameCtx.bezierCurveTo(0, 0, -10, 0, -10, 6);
-        gameCtx.bezierCurveTo(-10, 12, 0, 16, 0, 22);
-        gameCtx.bezierCurveTo(0, 16, 10, 12, 10, 6);
-        gameCtx.bezierCurveTo(10, 0, 0, 0, 0, 6);
-        gameCtx.fill();
-        gameCtx.restore();
-      }
-      alive() { return this.life > 0 && this.y < h + 80; }
-    }
-
-    const stars = Array.from({ length: 90 }, () => new Star());
-    const orbs = Array.from({ length: 5 }, () => new Orb());
-    const hearts = [];
-
-    function spawnHearts(x, y, count = 8, auto = false) {
-      for (let i = 0; i < count; i++) hearts.push(new Heart(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 30, auto));
-    }
-
-    function burstWords(text, x, y) {
-      const word = document.createElement('div');
-      word.className = 'popup-word';
-      word.textContent = text;
-      word.style.left = x + 'px';
-      word.style.top = y + 'px';
-      word.style.fontSize = (18 + Math.random() * 12) + 'px';
-      floatingUI.appendChild(word);
-      gsap.fromTo(word,
-        { x: -20, y: 0, opacity: 0, scale: 0.7 },
-        { x: (Math.random() - 0.5) * 120, y: -110 - Math.random() * 70, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }
-      );
-      gsap.to(word, { opacity: 0, y: '-=40', delay: 1, duration: 0.8, onComplete: () => word.remove() });
-    }
-
-    function screenBurst(x, y) {
-      const icons = ['💖', '✨', '🌟', '💗'];
-      for (let i = 0; i < 18; i++) {
-        const el = document.createElement('div');
-        el.className = Math.random() > 0.35 ? 'popup-heart' : 'popup-star';
-        el.textContent = icons[Math.floor(Math.random() * icons.length)];
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-        el.style.fontSize = (16 + Math.random() * 16) + 'px';
-        floatingUI.appendChild(el);
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 80 + Math.random() * 180;
-        gsap.to(el, {
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist,
-          opacity: 0,
-          rotation: (Math.random() - 0.5) * 240,
-          duration: 1.8,
-          ease: 'power2.out',
-          onComplete: () => el.remove()
+    const loader = new FontLoader();
+    loader.load(
+      'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+      (font) => {
+        const textGeo = new TextGeometry('riham', {
+          font,
+          size: 1.55,
+          depth: 0.42,
+          curveSegments: 18,
+          bevelEnabled: true,
+          bevelThickness: 0.06,
+          bevelSize: 0.05,
+          bevelOffset: 0,
+          bevelSegments: 10,
         });
-      }
-    }
 
-    function gainHope(amount, x = w / 2, y = h / 2) {
-      score += amount;
-      scoreEl.textContent = score;
-      burstWords('+' + amount + ' hope', x, y);
-      gsap.fromTo(scoreEl, { scale: 1.4 }, { scale: 1, duration: 0.5, ease: 'elastic.out(1,0.5)' });
-    }
+        textGeo.center();
+
+        const textMat = new THREE.MeshPhysicalMaterial({
+          color: '#ffd4f4',
+          emissive: '#a238ff',
+          emissiveIntensity: 0.9,
+          metalness: 0.55,
+          roughness: 0.14,
+          clearcoat: 1,
+          clearcoatRoughness: 0.18,
+          transmission: 0.08,
+          ior: 1.35,
+        });
+
+        textMesh = new THREE.Mesh(textGeo, textMat);
+        textMesh.position.y = 0.2;
+        mainGroup.add(textMesh);
+
+        const glowGeo = textGeo.clone();
+        const glowMat = new THREE.MeshBasicMaterial({
+          color: '#ff6ae6',
+          transparent: true,
+          opacity: 0.22,
+          side: THREE.BackSide,
+        });
+
+        glowMesh = new THREE.Mesh(glowGeo, glowMat);
+        glowMesh.position.copy(textMesh.position);
+        glowMesh.scale.setScalar(1.08);
+        mainGroup.add(glowMesh);
+      }
+    );
+
+    const clock = new THREE.Clock();
 
     function animate() {
-      pulse += 0.02;
-      bgCtx.clearRect(0, 0, w, h);
-      gameCtx.clearRect(0, 0, w, h);
+      const t = clock.getElapsedTime();
+      controls.update();
 
-      bgCtx.fillStyle = 'rgba(9,3,18,0.22)';
-      bgCtx.fillRect(0, 0, w, h);
+      stars.rotation.y = t * 0.03;
+      stars.rotation.x = Math.sin(t * 0.1) * 0.05;
 
-      orbs.forEach(o => { o.update(); o.draw(); });
-      stars.forEach(s => { s.update(); s.draw(); });
+      ringGroup.rotation.y = t * 0.22;
+      ringGroup.rotation.x = Math.sin(t * 0.6) * 0.08;
 
-      if (Math.random() < 0.08) spawnHearts(Math.random() * w, h + 20, 1, true);
+      rings.forEach((ring, i) => {
+        ring.rotation.z += 0.002 + i * 0.0008;
+        ring.position.y += Math.sin(t * 1.2 + i) * 0.0009;
+      });
 
-      for (let i = hearts.length - 1; i >= 0; i--) {
-        hearts[i].update();
-        hearts[i].draw();
-        if (!hearts[i].alive()) hearts.splice(i, 1);
+      const positions = sparkles.geometry.attributes.position.array;
+      for (let i = 0; i < sparkleCount; i++) {
+        const i3 = i * 3;
+        const p = sparkleOffsets[i];
+        positions[i3] = Math.cos(t * p.speed + p.angle) * p.radius;
+        positions[i3 + 1] = Math.sin(t * 1.5 + p.rise) * 0.9;
+        positions[i3 + 2] = Math.sin(t * p.speed + p.angle) * p.radius * 0.35;
+      }
+      sparkles.geometry.attributes.position.needsUpdate = true;
+
+      if (textMesh && glowMesh) {
+        textMesh.rotation.y = Math.sin(t * 0.65) * 0.28;
+        textMesh.rotation.x = Math.cos(t * 0.4) * 0.08;
+        textMesh.position.y = 0.2 + Math.sin(t * 1.4) * 0.18;
+
+        glowMesh.rotation.copy(textMesh.rotation);
+        glowMesh.position.copy(textMesh.position);
+        const pulse = 1.08 + Math.sin(t * 2.5) * 0.035;
+        glowMesh.scale.setScalar(pulse);
       }
 
+      pinkLight.position.x = Math.sin(t * 1.2) * 5;
+      pinkLight.position.y = 2.2 + Math.cos(t * 0.8) * 1.2;
+      cyanLight.position.x = Math.cos(t * 0.95) * 5;
+      cyanLight.position.z = 5 + Math.sin(t * 1.3) * 1.5;
+
+      renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
 
-    document.addEventListener('mousemove', (e) => {
-      pointer.x = e.clientX;
-      pointer.y = e.clientY;
-      pointer.active = true;
-
-      const rx = (e.clientY / h - 0.5) * -10;
-      const ry = (e.clientX / w - 0.5) * 14;
-      gsap.to(card, {
-        rotateX: rx,
-        rotateY: ry,
-        x: (e.clientX / w - 0.5) * 18,
-        y: (e.clientY / h - 0.5) * 14,
-        duration: 0.45,
-        ease: 'power3.out'
-      });
-    });
-
-    document.addEventListener('mouseleave', () => {
-      pointer.active = false;
-      gsap.to(card, { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.8, ease: 'power3.out' });
-    });
-
-    document.addEventListener('click', (e) => {
-      spawnHearts(e.clientX, e.clientY, 12);
-      screenBurst(e.clientX, e.clientY);
-      gainHope(3, e.clientX, e.clientY);
-    });
-
-    collectBtn.addEventListener('click', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top;
-      spawnHearts(x, y, 16);
-      gainHope(10, x, y);
-      footerText.textContent = 'Every small step still counts, Riham.';
-    });
-
-    burstBtn.addEventListener('click', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top;
-      screenBurst(x, y);
-      spawnHearts(w / 2, h / 2, 26);
-      footerText.textContent = 'You are surrounded by love, even in quiet moments.';
-    });
-
-    surpriseBtn.addEventListener('click', () => {
-      for (let i = 0; i < 8; i++) {
-        setTimeout(() => {
-          const x = Math.random() * w;
-          const y = Math.random() * h * 0.8 + 40;
-          screenBurst(x, y);
-          spawnHearts(x, y, 10);
-          gainHope(5, x, y);
-        }, i * 180);
-      }
-      footerText.textContent = 'The world is brighter with you in it ✨';
-      gsap.fromTo(card, { scale: 0.98 }, { scale: 1.02, yoyo: true, repeat: 1, duration: 0.25, ease: 'power2.inOut' });
-    });
-
-    gsap.fromTo(card,
-      { opacity: 0, y: 60, scale: 0.96 },
-      { opacity: 1, y: 0, scale: 1, duration: 1.4, ease: 'power3.out' }
-    );
-
-    gsap.fromTo('.name',
-      { opacity: 0, scale: 0.75 },
-      { opacity: 1, scale: 1, duration: 1.5, delay: 0.35, ease: 'elastic.out(1,0.5)' }
-    );
-
-    gsap.to('.pill', {
-      y: -6,
-      duration: 2.2,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-      stagger: 0.2
-    });
+    animate();
 
     window.addEventListener('resize', () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
-      bg.width = game.width = w;
-      bg.height = game.height = h;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    typeEffect();
-    animate();
   </script>
 </body>
 </html>
