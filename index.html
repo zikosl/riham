@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Riham Dreamscape</title>
+  <title>Riham Fairy Dreamscape</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -25,12 +25,13 @@
       transform: translateX(-50%);
       padding: 10px 18px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.85);
-      letter-spacing: 0.35em;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.28em;
       font-size: 12px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 0 30px rgba(255, 130, 220, 0.18);
       z-index: 5;
       text-transform: uppercase;
       white-space: nowrap;
@@ -52,17 +53,14 @@
     }
     .glow-top,
     .glow-bottom {
-      position: fixed;
-      left: 0;
-      right: 0;
-      pointer-events: none;
-      filter: blur(60px);
-      z-index: 1;
+      bottom: 0;
+      height: 240px;
+      background: linear-gradient(to top, rgba(170, 120, 255, 0.18), transparent);
     }
     .glow-top {
       top: 0;
-      height: 180px;
-      background: linear-gradient(to bottom, rgba(255, 70, 220, 0.18), transparent);
+      height: 220px;
+      background: linear-gradient(to bottom, rgba(255, 140, 230, 0.22), transparent);
     }
     .glow-bottom {
       bottom: 0;
@@ -88,8 +86,8 @@
   <canvas id="scene"></canvas>
   <div class="glow-top"></div>
   <div class="glow-bottom"></div>
-  <div class="top-badge">DREAMSCAPE • RIHAM</div>
-  <div class="bottom-note">Drag to orbit • Scroll to zoom</div>
+  <div class="top-badge">FAIRY BLOOM • RIHAM</div>
+  <div class="bottom-note">Fairy lights • soft bloom • magical orbit</div>
 
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
@@ -100,7 +98,7 @@
     const canvas = document.getElementById('scene');
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2('#050816', 0.035);
+    scene.fog = new THREE.FogExp2('#120818', 0.03);
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 1.5, 10);
@@ -121,24 +119,24 @@
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
 
-    const ambient = new THREE.AmbientLight('#88aaff', 1.35);
+    const ambient = new THREE.AmbientLight('#caa6ff', 1.7);
     scene.add(ambient);
 
-    const pinkLight = new THREE.PointLight('#ff4fd8', 30, 30, 2);
+    const pinkLight = new THREE.PointLight('#ff7adf', 36, 34, 2);
     pinkLight.position.set(-4, 3, 6);
     scene.add(pinkLight);
 
-    const cyanLight = new THREE.PointLight('#4deaff', 28, 32, 2);
+    const cyanLight = new THREE.PointLight('#b18cff', 30, 34, 2);
     cyanLight.position.set(5, -1, 5);
     scene.add(cyanLight);
 
-    const rimLight = new THREE.DirectionalLight('#ffffff', 2.6);
+    const rimLight = new THREE.DirectionalLight('#fff3ff', 3.1);
     rimLight.position.set(0, 5, -2);
     scene.add(rimLight);
 
     const floorGeo = new THREE.CircleGeometry(8, 64);
     const floorMat = new THREE.MeshBasicMaterial({
-      color: '#091426',
+      color: '#1a1026',
       transparent: true,
       opacity: 0.5,
       side: THREE.DoubleSide,
@@ -171,12 +169,12 @@
     }
 
     const rings = [
-      createRing(2.7, 0.035, '#46d5ff', -0.05, 0.35),
-      createRing(3.25, 0.025, '#ff61d8', 0.18, -0.28),
-      createRing(3.9, 0.02, '#8d7bff', -0.2, 0.18),
+      createRing(2.7, 0.04, '#ff9ce8', -0.05, 0.35),
+      createRing(3.25, 0.028, '#ffd1f4', 0.18, -0.28),
+      createRing(3.9, 0.022, '#b68cff', -0.2, 0.18),
     ];
 
-    const starsCount = 1800;
+    const starsCount = 2200;
     const starGeo = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starsCount * 3);
     for (let i = 0; i < starsCount; i++) {
@@ -191,7 +189,7 @@
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
     const starMat = new THREE.PointsMaterial({
-      color: '#d7ecff',
+      color: '#ffe6fb',
       size: 0.08,
       transparent: true,
       opacity: 0.9,
@@ -201,7 +199,7 @@
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    const sparkleCount = 220;
+    const sparkleCount = 340;
     const sparkleGeo = new THREE.BufferGeometry();
     const sparklePositions = new Float32Array(sparkleCount * 3);
     const sparkleOffsets = [];
@@ -223,7 +221,7 @@
 
     sparkleGeo.setAttribute('position', new THREE.BufferAttribute(sparklePositions, 3));
     const sparkleMat = new THREE.PointsMaterial({
-      color: '#ffffff',
+      color: '#fff7ff',
       size: 0.05,
       transparent: true,
       opacity: 0.95,
@@ -235,6 +233,56 @@
 
     let textMesh = null;
     let glowMesh = null;
+    const butterflyGroup = new THREE.Group();
+    mainGroup.add(butterflyGroup);
+
+    function createButterfly(colorA, colorB, scale = 1) {
+      const g = new THREE.Group();
+      const matA = new THREE.MeshBasicMaterial({ color: colorA, transparent: true, opacity: 0.9, side: THREE.DoubleSide });
+      const matB = new THREE.MeshBasicMaterial({ color: colorB, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
+      const wingGeo = new THREE.SphereGeometry(0.26 * scale, 18, 18, 0, Math.PI);
+      const wingLeftTop = new THREE.Mesh(wingGeo, matA);
+      wingLeftTop.scale.set(1.1, 1.5, 0.18);
+      wingLeftTop.rotation.z = 0.6;
+      wingLeftTop.position.set(-0.22 * scale, 0.15 * scale, 0);
+
+      const wingRightTop = wingLeftTop.clone();
+      wingRightTop.position.x *= -1;
+      wingRightTop.rotation.z *= -1;
+
+      const wingLeftBottom = new THREE.Mesh(wingGeo, matB);
+      wingLeftBottom.scale.set(0.9, 1.1, 0.16);
+      wingLeftBottom.rotation.z = 1.0;
+      wingLeftBottom.position.set(-0.18 * scale, -0.14 * scale, 0);
+
+      const wingRightBottom = wingLeftBottom.clone();
+      wingRightBottom.position.x *= -1;
+      wingRightBottom.rotation.z *= -1;
+
+      const body = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.035 * scale, 0.34 * scale, 4, 10),
+        new THREE.MeshBasicMaterial({ color: '#fff2ff', transparent: true, opacity: 0.95 })
+      );
+      body.rotation.z = Math.PI / 2;
+
+      g.add(wingLeftTop, wingRightTop, wingLeftBottom, wingRightBottom, body);
+      g.userData.parts = { wingLeftTop, wingRightTop, wingLeftBottom, wingRightBottom };
+      return g;
+    }
+
+    const butterflies = [
+      createButterfly('#ffb0eb', '#ffd8f7', 1),
+      createButterfly('#e5b8ff', '#ffd4ef', 0.8),
+      createButterfly('#ffc3f2', '#caa7ff', 0.7),
+      createButterfly('#ffe0fb', '#f3b7ff', 0.9),
+      createButterfly('#ffb8de', '#fff0fb', 0.65),
+    ];
+
+    butterflies.forEach((b, i) => {
+      b.position.set(Math.cos(i * 1.25) * (2.8 + i * 0.32), 0.8 - i * 0.15, Math.sin(i * 1.25) * 1.4);
+      b.userData.offset = i * 1.4;
+      butterflyGroup.add(b);
+    });
 
     const loader = new FontLoader();
     loader.load(
@@ -255,15 +303,15 @@
         textGeo.center();
 
         const textMat = new THREE.MeshPhysicalMaterial({
-          color: '#ffd4f4',
-          emissive: '#a238ff',
-          emissiveIntensity: 0.9,
-          metalness: 0.55,
-          roughness: 0.14,
+          color: '#ffe5f8',
+          emissive: '#c25cff',
+          emissiveIntensity: 1.15,
+          metalness: 0.3,
+          roughness: 0.08,
           clearcoat: 1,
-          clearcoatRoughness: 0.18,
-          transmission: 0.08,
-          ior: 1.35,
+          clearcoatRoughness: 0.12,
+          transmission: 0.14,
+          ior: 1.38,
         });
 
         textMesh = new THREE.Mesh(textGeo, textMat);
@@ -272,9 +320,9 @@
 
         const glowGeo = textGeo.clone();
         const glowMat = new THREE.MeshBasicMaterial({
-          color: '#ff6ae6',
+          color: '#ffb4f1',
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.32,
           side: THREE.BackSide,
         });
 
@@ -291,10 +339,10 @@
       const t = clock.getElapsedTime();
       controls.update();
 
-      stars.rotation.y = t * 0.03;
+      stars.rotation.y = t * 0.04;
       stars.rotation.x = Math.sin(t * 0.1) * 0.05;
 
-      ringGroup.rotation.y = t * 0.22;
+      ringGroup.rotation.y = t * 0.18;
       ringGroup.rotation.x = Math.sin(t * 0.6) * 0.08;
 
       rings.forEach((ring, i) => {
@@ -312,6 +360,20 @@
       }
       sparkles.geometry.attributes.position.needsUpdate = true;
 
+      butterflies.forEach((b, i) => {
+        const tt = t * (0.8 + i * 0.08) + b.userData.offset;
+        b.position.x = Math.cos(tt) * (2.8 + i * 0.24);
+        b.position.y = 0.9 + Math.sin(tt * 1.7) * 0.7 + Math.cos(tt * 0.8) * 0.12;
+        b.position.z = Math.sin(tt) * 1.2;
+        b.rotation.y = Math.atan2(Math.cos(tt), -Math.sin(tt));
+        const flap = Math.sin(t * 10 + i * 1.4) * 0.55;
+        const parts = b.userData.parts;
+        parts.wingLeftTop.rotation.y = flap;
+        parts.wingRightTop.rotation.y = -flap;
+        parts.wingLeftBottom.rotation.y = flap * 0.8;
+        parts.wingRightBottom.rotation.y = -flap * 0.8;
+      });
+
       if (textMesh && glowMesh) {
         textMesh.rotation.y = Math.sin(t * 0.65) * 0.28;
         textMesh.rotation.x = Math.cos(t * 0.4) * 0.08;
@@ -319,13 +381,13 @@
 
         glowMesh.rotation.copy(textMesh.rotation);
         glowMesh.position.copy(textMesh.position);
-        const pulse = 1.08 + Math.sin(t * 2.5) * 0.035;
+        const pulse = 1.1 + Math.sin(t * 2.4) * 0.05;
         glowMesh.scale.setScalar(pulse);
       }
 
-      pinkLight.position.x = Math.sin(t * 1.2) * 5;
+      pinkLight.position.x = Math.sin(t * 1.1) * 4.5;
       pinkLight.position.y = 2.2 + Math.cos(t * 0.8) * 1.2;
-      cyanLight.position.x = Math.cos(t * 0.95) * 5;
+      cyanLight.position.x = Math.cos(t * 0.8) * 4.5;
       cyanLight.position.z = 5 + Math.sin(t * 1.3) * 1.5;
 
       renderer.render(scene, camera);
